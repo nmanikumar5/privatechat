@@ -6,8 +6,37 @@
 
 var express = require('express'),
 	app = express();
-
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
 // This is needed if the app is run on heroku:
+
+//connect to MongoDB
+mongoose.connect('mongodb://localhost/testForAuth');
+var db = mongoose.connection;
+
+//handle mongo error
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+  // we're connected!
+});
+
+
+//use sessions for tracking logins
+app.use(session({
+  secret: 'work hard',
+  resave: true,
+  saveUninitialized: false,
+  store: new MongoStore({
+    mongooseConnection: db
+  })
+}));
+
+// parse incoming requests
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
 
 var port = process.env.PORT || 8080;
 
